@@ -1,0 +1,52 @@
+﻿@using TSZH_Komarov.Data
+@* <!doctype html> *@
+<link rel="stylesheet" href="~/css/main.css" asp-append-version="true"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>  
+</head>
+@{
+    var user = User;
+    bool isAdmin = user.FindFirst("role")?.Value == "admin";
+    int tszhId = Convert.ToInt32(user.FindFirst("tszh")?.Value);
+
+    string tszhName = user.FindFirst("tszhName")?.Value;
+}
+<body>
+    <header>
+        @await RenderSectionAsync("Styles", required: false)
+        @if (User.Identity.IsAuthenticated)
+        {
+            <div class="logo"> <a asp-controller="Home" asp-action="Index">@tszhName</a></div>
+            <nav class="links">
+                @if (isAdmin)
+                {
+                    <a asp-controller="User" asp-action="Registration">Регистрация</a>
+                }
+                <a asp-controller="MeterReadings" asp-action="MeterReadings">Счетчики</a>
+                <a asp-controller="Polls" asp-action="Voting">Голосования</a>
+                <a asp-controller="Forum" asp-action="ForumCategories">Форум</a>
+                <a asp-controller="Services" asp-action="Services">Службы</a>
+                <a asp-controller="User" asp-action="Profile">Профиль</a>
+            </nav>
+        }
+        else
+        {
+            <div class="logo"> <a asp-controller="User" asp-action="Login">Информационный портал ТСЖ</a></div>
+            <nav class="links">
+                
+            </nav>
+        }
+    </header>
+    <main>
+        @RenderBody()
+    </main>
+    <footer>
+        <p>Разработано для дипломного проекта в 2025 году</p>
+    </footer>
+</body>
+</html>
+ 

@@ -1,0 +1,61 @@
+﻿* {
+    margin: 0;
+    padding: 0;
+}
+body {
+    font-family: 'Montserrat', sans-serif;
+}
+
+.wrapper {
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    height:100%;
+}
+.content form {
+    display: grid;
+}
+
+.content input {
+    margin-bottom: 1em;
+    padding: 0.6em 1em;
+    background: #fff;
+    color: #000000;
+    border: 1px solid white;
+    border-radius: 5px;
+    width: 350px;
+}
+
+.content {
+    color: #000000;
+}
+
+.content label{
+    margin-bottom: 5px;
+}
+
+.content input[type="submit"] {
+    border: 1px solid #FCA311;
+    border-radius: 5px;
+    font-size: 1.25em;
+    background: #FCA311;
+    color: #000000; 
+}
+
+.content h1, .content h2 {
+    margin-bottom: 1em;
+    align-self: center;
+    align-content:center;
+}
+
+.content p {
+    margin-bottom: 0.5em;
+}
+
+.content a:link, .content a:visited {
+    color: #FCA311;
+}
+
+.content a:hover {
+    text-decoration: none;
+}

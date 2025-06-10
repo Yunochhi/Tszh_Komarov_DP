@@ -1,0 +1,86 @@
+﻿@model List<ForumCategory>
+@{
+    ViewData["Title"] = "Форумы";
+}
+
+<div class="forum-container">
+    <div class="forum-header">
+        <h1 class="forum-title">Форумы</h1>
+    </div>
+
+    <div class="category-list">
+        @foreach (var category in Model)
+        {
+            <a asp-controller="Forum"
+               asp-action="ForumTopics"
+               asp-route-categoryId="@category.ForumCategorieId"
+               class="category-card">
+                <h3>@category.Name</h3>
+                <p>Обсуждения по данной тематике</p>
+            </a>
+        }
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #34495e;
+        --accent-color: #3498db;
+        --background-color: #f8f9fa;
+        --border-color: #dee2e6;
+        --text-muted: #6c757d;
+    }
+
+    .forum-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .forum-header {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .forum-title {
+        color: var(--primary-color);
+    }
+
+    .category-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .category-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: var(--primary-color);
+    }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: var(--accent-color);
+        }
+
+        .category-card h3 {
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+
+        .category-card p {
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+</style>

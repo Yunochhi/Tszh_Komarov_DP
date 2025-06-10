@@ -1,0 +1,126 @@
+﻿@using TSZH_Komarov.Viewmodels.User
+<link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/error.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/notify.css" asp-append-version="true" />
+@model RegistrationViewModel;
+@{
+    ViewData["Title"] = "Регистрация";
+}
+<div class="wrapper">
+    <div class="content">
+        <form method="post" id="registrationForm">
+            <h2>Регистрация в системе</h2>
+
+            <!-- Основные поля пользователя -->
+            <label asp-for="Fullname">ФИО:</label>
+            <input asp-for="Fullname" value="@Model.Fullname" />
+
+            <label asp-for="Email">Почта:</label>
+            <input asp-for="Email" value="@Model.Email" />
+
+            <label asp-for="PhoneNumber">Номер телефона:</label>
+            <input asp-for="PhoneNumber" value="@Model.PhoneNumber" />
+
+            <label asp-for="Password">Пароль:</label>
+            <input asp-for="Password" type="password" />
+
+            <label asp-for="RepeatPassword">Повторите пароль:</label>
+            <input asp-for="RepeatPassword" type="password" />
+
+            <input type="hidden" asp-for="CurrentTszhId" />
+
+            <!-- Блок выбора дома -->
+            <div class="house-selection">
+                <label asp-for="SelectedHouseId">Дом:</label>
+                <select asp-for="SelectedHouseId" id="houseSelect" class="form-control" required>
+                    <option value="">Выберите дом</option>
+                    @foreach (var house in Model.Houses)
+                    {
+                        <option value="@house.HouseId"
+                                selected="@(house.HouseId == Model.SelectedHouseId)">
+                            @house.Address
+                        </option>
+                    }
+                </select>
+                <span asp-validation-for="SelectedHouseId" class="text-danger"></span>
+            </div>
+
+            <!-- Блок выбора квартиры (всегда видим) -->
+            <div class="apartment-selection">
+                <label asp-for="SelectedApartmentId">Квартира:</label>
+                <select asp-for="SelectedApartmentId" id="apartmentSelect" class="form-control" required>
+                    <option value="">Выберите квартиру</option>
+                    @if (Model.Apartments != null)
+                    {
+                        @foreach (var apartment in Model.Apartments)
+                        {
+                            <option value="@apartment.ApartmentId"
+                                    selected="@(apartment.ApartmentId == Model.SelectedApartmentId)">
+                                @apartment.Number
+                            </option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="SelectedApartmentId" class="text-danger"></span>
+            </div>
+
+            <div asp-validation-summary="All" class="error-messages"></div>
+
+            <!-- Кнопка регистрации (всегда видимая) -->
+            <input type="submit" value="Зарегистрироваться" />
+        </form>
+    </div>
+</div>
+
+<div class="container">
+    @if (TempData["Message"] != null)
+    {
+        <div class="auto-hide">@TempData["Message"]</div>
+    }
+</div>
+
+<style>
+    .house-selection,
+    .apartment-selection {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-control {
+        padding: 0.6em 1em;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #fff;
+        color: #000;
+        width: 100%;
+        box-sizing: border-box;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const houseSelect = document.getElementById('houseSelect');
+        const apartmentSelect = document.getElementById('apartmentSelect');
+
+        if (houseSelect) {
+            houseSelect.addEventListener('change', function() {
+                const houseId = this.value;
+                // Очищаем предыдущие значения
+                apartmentSelect.innerHTML = '<option value="">Выберите квартиру</option>';
+
+                if (houseId) {
+                    fetch(`/User/GetApartments?houseId=${houseId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            data.forEach(apartment => {
+                                const option = document.createElement('option');
+                                option.value = apartment.apartmentId;
+                                option.textContent = apartment.number;
+                                apartmentSelect.appendChild(option);
+                            });
+                        })
+                        .catch(error => console.error('Ошибка:', error));
+                }
+            });
+        }
+    });
+</script>

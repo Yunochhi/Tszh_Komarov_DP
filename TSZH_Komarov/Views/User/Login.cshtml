@@ -1,0 +1,22 @@
+﻿@using TSZH_Komarov.Viewmodels
+@using TSZH_Komarov.Viewmodels.User
+<link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/error.css" asp-append-version="true" />
+@model LoginViewModel;
+@{
+    ViewData["Title"] = "Авторизация";
+}
+<div class="wrapper">
+    <div class="content">
+        <form method="post">
+            <h2>Вход в систему</h2>
+            <label asp-for="Email">Почта:</label>
+            <input asp-for="Email"/>
+            <label asp-for="Password">Пароль:</label>
+            <input asp-for="Password" />
+ 
+            <div asp-validation-summary="All" class="error-messages"></div>
+            <input type="submit" value="Войти" />
+        </form>
+    </div>
+</div>

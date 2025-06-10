@@ -1,0 +1,32 @@
+﻿@model List<Notification>
+<link rel="stylesheet" href="~/css/notification.css" asp-append-version="true" />
+
+<div class="service-container">
+    <div class="service-history-header">
+        <h1 class="service-title">Уведомления</h1>
+    </div>
+
+    @if (Model.Any())
+    {
+        foreach (var notification in Model)
+        {
+            <div class="service-card">
+                <div class="card-content">
+                    <h3 class="title">@notification.Topic</h3>
+                    <p class="message">@notification.Description</p>
+                </div>
+                <div class="service-footer">
+                    <span class="date">@notification.CreatedDate.ToString("dd.MM.yyyy HH:mm")</span>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="service-card empty-notification">
+            <div class="card-content">
+                <h3 class="title">Нет уведомлений</h3>
+            </div>
+        </div>
+    }
+</div>

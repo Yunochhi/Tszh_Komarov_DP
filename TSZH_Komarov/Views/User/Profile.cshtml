@@ -1,0 +1,151 @@
+﻿@using TSZH_Komarov.Viewmodels.User
+@{
+    ViewData["Title"] = "Профиль";
+}
+
+@model ProfileViewModel
+
+<link rel="stylesheet" href="~/css/profile.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/notify.css" asp-append-version="true" />
+<div class="tszh-container">
+    <div class="profile-header">
+        <h2 class="tszh-title">Настройки профиля</h2>
+        <a asp-controller="Notification" asp-action="Notifications" class="notifications-icon">   
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+        </a>
+    </div>
+    <div class="tab-system">
+        <input type="radio" name="tabs" id="personal-tab"
+        @(TempData["ActiveTab"]?.ToString() == "personal" ? "checked" : "")>
+
+        <input type="radio" name="tabs" id="security-tab"
+        @(TempData["ActiveTab"]?.ToString() == "security" ? "checked" : "")>
+
+        <input type="radio" name="tabs" id="notifications-tab"
+        @(TempData["ActiveTab"]?.ToString() == "notifications" ? "checked" : "")>
+
+        <div class="tab-nav">
+            <label for="personal-tab" class="tab-label">Личные данные</label>
+            <label for="security-tab" class="tab-label">Безопасность</label>
+            <label for="notifications-tab" class="tab-label">Уведомления</label>
+        </div>
+
+        <div class="tab-content personal-content">
+            <form method="post" asp-action="UpdateProfile">
+                <input type="hidden" asp-for="@Model.IsFirtsLogin" />
+                <input type="hidden" asp-for="@Model.PersonalAccount" />
+                <input type="hidden" asp-for="@Model.NewPassword" />
+                <input type="hidden" asp-for="@Model.OldPassword" />
+                <input type="hidden" asp-for="@Model.NotificationMethod" />
+                <div class="profile-section">
+                    <div class="form-group">
+                        <label asp-for="FullName">ФИО</label>
+                        <input asp-for="FullName" class="form-control" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+                    <div class="info-group">
+                        <label>Лицевой счет</label>
+                        <div class="info-value">@Model.PersonalAccount</div>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <h3 class="section-title">Контактные данные</h3>
+                    <div class="form-group">
+                        <label asp-for="Email">Email</label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="PhoneNumber">Телефон</label>
+                        <input asp-for="PhoneNumber" class="form-control" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button type="submit" class="btn-save">Сохранить изменения</button>
+                        <a asp-controller="User" asp-action="Logout" class="btn-logout">Выйти</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="tab-content security-content">
+            <form method="post" asp-action="UpdateSecurity">
+                <input type="hidden" asp-for="@Model.IsFirtsLogin" />
+                <input type="hidden" asp-for="@Model.PersonalAccount" />
+                <input type="hidden" asp-for="@Model.Email" />
+                <input type="hidden" asp-for="@Model.FullName" />
+                <input type="hidden" asp-for="@Model.PhoneNumber" />
+                <input type="hidden" asp-for="@Model.NotificationMethod" />
+                <div class="profile-section">
+                    <div class="form-group">
+                        <label asp-for="OldPassword">Текущий пароль</label>
+                        <input asp-for="OldPassword" class="form-control" type="password" value="@Model.OldPassword" />
+                        <span asp-validation-for="OldPassword" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="NewPassword">Новый пароль</label>
+                        <input asp-for="NewPassword" class="form-control" type="password" />
+                        <span asp-validation-for="NewPassword" class="text-danger"></span>
+                    </div>
+                    <div class="action-buttons">
+                        <button type="submit" class="btn-save">Сохранить изменения</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="tab-content notifications-content">
+            <form method="post" asp-action="UpdateNotifications">
+                <input type="hidden" asp-for="@Model.IsFirtsLogin" />
+                <input type="hidden" asp-for="@Model.PersonalAccount" />
+                <input type="hidden" asp-for="@Model.Email" />
+                <input type="hidden" asp-for="@Model.FullName" />
+                <input type="hidden" asp-for="@Model.PhoneNumber" />
+                <input type="hidden" asp-for="@Model.NewPassword" />
+                <input type="hidden" asp-for="@Model.OldPassword" />
+
+                <div class="profile-section">
+                    <h3 class ="section-title">Канал уведомлений</h3>
+
+                    <div class="form-group">
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" asp-for="NotificationMethod" value="1" />
+                                <span class="radio-custom"></span>
+                                <div class="text">
+                                    <span class="title">Телефон:</span>
+                                    <span class="value">@Model.PhoneNumber</span>
+                                </div>
+                            </label>
+
+                            <label class="radio-label">
+                                <input type="radio" asp-for="NotificationMethod" value="0" />
+                                <span class="radio-custom"></span>
+                                <div class="text">
+                                    <span class="title">Email:</span>
+                                    <span class="value">@Model.Email</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button type="submit" class="btn-save">Сохранить изменения</button> 
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="container">
+    @if (TempData["Message"] != null)
+    {
+        <div class="auto-hide">@TempData["Message"]</div>
+    }
+</div>
+

@@ -1,0 +1,104 @@
+﻿@using TSZH_Komarov.Viewmodels
+@using TSZH_Komarov.Viewmodels.Readings
+
+@{
+    ViewData["Title"] = "Показания счётчиков";
+}
+
+<link rel="stylesheet" href="~/css/meterRead.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/notify.css" asp-append-version="true" />
+
+@model List<ApartmentMetersViewModel>
+
+<div class="tszh-container">
+    <div class="meter-header">
+        <h2 class="tszh-title">Показания счетчиков</h2>
+        <div class="management-info">
+            <span>УК РЭМП Железнодорожного района (ООО)</span>
+            <span>Код 9784 - ЖКУ, г. Екатеринбург</span>
+        </div>
+    </div>
+
+    @if (ViewContext.ModelState.ErrorCount > 0)
+    {
+        <div class="error-message">
+            @foreach (var error in ViewContext.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <div>@error.ErrorMessage</div>
+            }
+        </div>
+    }
+
+    @foreach (var apartment in Model)
+    {
+        <form method="post" asp-action="SubmitApartmentMeters">
+            <div class="apartment-card">
+                <input type="hidden" asp-for="@apartment.ApartmentId" name="ApartmentId" />
+                <input type="hidden" asp-for="@apartment.AccountNumber" name="AccountNumber" />
+
+                <div class="card-header">
+                    <h3>Лицевой счет: @apartment.AccountNumber</h3>
+                    <a asp-controller="MeterReadings"
+                       asp-action="MeterReadingsHistory"
+                       asp-route-apartmentId="@apartment.ApartmentId"
+                       class="history-link" title="История показаний">
+                        <i class="fas fa-history"></i>
+                    </a>
+                </div>
+
+                <table class="meter-table">
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>Предыдущие показания</th>
+                            <th>Текущие показания</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < apartment.Meters.Count; i++)
+                        {
+                            <tr>
+                                <td>
+                                    @apartment.Meters[i].MeterName
+                                    <input type="hidden" asp-for="@apartment.Meters[i].MeterTypeId" name="Meters[@i].MeterTypeId" />
+                                    <input type="hidden" asp-for="@apartment.Meters[i].MeterName" name="Meters[@i].MeterName" />
+                                    <input type="hidden" asp-for="@apartment.Meters[i].Unit" name="Meters[@i].Unit" />
+                                    <input type="hidden" asp-for="@apartment.Meters[i].PreviousValue" name="Meters[@i].PreviousValue" />
+                                    <input type="hidden" asp-for="@apartment.Meters[i].ApartmentId" name="Meters[@i].ApartmentId" />
+                                </td>
+                                <td>
+                                    @apartment.Meters[i].PreviousValue.ToString("N2") @apartment.Meters[i].Unit
+                                </td>
+                                <td>
+                                    <div class="input-group">
+                                        <input asp-for="@apartment.Meters[i].CurrentValue"
+                                               class="form-control"
+                                               name="Meters[@i].CurrentValue"
+                                               placeholder="Введите показания" />
+                                        <span class="input-unit">@apartment.Meters[i].Unit</span>
+                                    </div>
+                                    <span asp-validation-for="@apartment.Meters[i].CurrentValue"
+                                          class="text-danger"></span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="form-footer">
+                    <button type="submit" class="submit-button">Отправить показания</button>
+                </div>
+            </div>
+        </form>
+    }
+</div>
+
+<div class="container">
+    @if (TempData["Message"] != null)
+    {
+        <div class="auto-hide">@TempData["Message"]</div>
+    }
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+}

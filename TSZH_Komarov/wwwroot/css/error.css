@@ -1,0 +1,7 @@
+﻿.error-messages ul {
+    color: orangered;
+    margin-bottom: 1em;
+    font-weight: lighter;
+    list-style-type: none;
+    margin-left: 0.5em;
+}

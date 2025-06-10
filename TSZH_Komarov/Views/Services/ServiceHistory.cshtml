@@ -1,0 +1,64 @@
+﻿@using TSZH_Komarov.Viewmodels
+
+@{
+    ViewData["Title"] = "История заявок";
+}
+
+@model ServiceViewModel
+<link rel="stylesheet" href="~/css/services.css" asp-append-version="true" />
+
+<div class="service-container">
+    <div class="service-history-header">
+        <h1 class="service-title">История заявок</h1>
+
+        <div class="filter-buttons">
+            <a asp-action="ServiceHistory" asp-route-filter="all"
+               class="filter-button @(Model.CurrentFilter == "all" ? "active" : "")">
+                Все
+            </a>
+
+            <a asp-action="ServiceHistory" asp-route-filter="active"
+               class="filter-button @(Model.CurrentFilter == "active" ? "active" : "")">
+                Активные
+            </a>
+            <a asp-action="ServiceHistory" asp-route-filter="completed"
+               class="filter-button @(Model.CurrentFilter == "completed" ? "active" : "")">
+                Выполненные
+            </a>
+
+            <a asp-action="ServiceHistory" asp-route-filter="cancelled"
+               class="filter-button @(Model.CurrentFilter == "cancelled" ? "active" : "")">
+                Отмененные
+            </a>
+        </div> 
+    </div>
+    @foreach (var request in Model.Requests)
+    {
+        <div class="service-card">
+            <div class="card-header">
+                <h3 class="text-name"> @request.ServiceType.Name</h3>
+                <span class="text-hist">
+                    Дата заявки:  @request.CreatedDate           
+                </span>
+            </div>
+            <div class="service-footer">
+                <span class="status-badge @GetStatusClass(request.Status)">
+                    @request.Status
+                </span>
+            </div>
+        </div>
+    }
+</div>
+
+@functions {
+    string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "В обработке" => "status-in-progress",
+            "Выполнено" => "status-completed",
+            "Отменено" => "status-cancelled",
+            _ => ""
+        };
+    }
+}

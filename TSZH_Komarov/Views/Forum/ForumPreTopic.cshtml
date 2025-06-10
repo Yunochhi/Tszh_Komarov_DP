@@ -1,0 +1,174 @@
+﻿@using TSZH_Komarov.Viewmodels.Forum
+@model List<PreTopicViewModel>
+
+@{
+    ViewData["Title"] = "Модерация тем";
+}
+
+<link rel="stylesheet" href="~/css/notify.css" asp-append-version="true" />
+
+<div class="history-container">
+    <div class="meter-history-header">
+        <h1 class="history-title">Объявления на модерации</h1>
+    </div>
+
+    @foreach (var item in Model)
+    {
+        <form method="post" class="announcement-card" asp-action="ModeratePreTopic">
+            <input type="hidden" name="PreTopicId" value="@item.PreTopicId" />
+            <input type="hidden" name="ForumCategorieId" value="@item.ForumCategorieId" />
+            <input type="hidden" name="UserId" value="@item.UserId" />
+            <input type="hidden" name="TszhId" value="@item.TszhId" />
+
+            <div class="announcement-header">
+                <input type="text" class="announcement-title" name="Name" value="@item.Name" required />
+            </div>
+
+            <div class="announcement-content">
+                <textarea class="announcement-description" name="Description" rows="4" required>@item.Description</textarea>
+            </div>
+
+            <div class="announcement-footer">
+                <div class="action-buttons">
+                    <button type="submit" name="actionType" value="reject" class="btn btn-secondary">Отклонить</button>
+                    <button type="submit" name="actionType" value="publish" class="btn btn-primary">Опубликовать</button>
+                </div>
+            </div>
+        </form>
+    }
+</div>
+
+<div class="container">
+    @if (TempData["Message"] != null)
+    {
+        <div class="auto-hide">@TempData["Message"]</div>
+    }
+</div>
+
+<style>
+    :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #34495e;
+        --accent-color: #3498db;
+        --background-color: #f8f9fa;
+        --border-color: #dee2e6;
+        --text-muted: #6c757d;
+    }
+
+    .history-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .meter-history-header {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .announcement-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        transition: transform 0.2s;
+        margin-bottom: 1.5rem;
+    }
+
+    .announcement-header {
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .announcement-title {
+        color: var(--primary-color);
+        font-size: 1.4rem;
+        font-weight: bold;
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-family: inherit;
+        background-color: var(--white);
+    }
+
+    .announcement-content {
+        margin-bottom: 20px;
+    }
+
+    .announcement-description {
+        color: var(--secondary-color);
+        line-height: 1.6;
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        resize: vertical;
+        min-height: 120px;
+        box-sizing: border-box;
+        font-family: inherit;
+        font-size: 1rem;
+        background-color: var(--white);
+    }
+
+    .announcement-footer {
+        display: flex;
+        justify-content: end;
+        align-items: center;
+        padding-top: 15px;
+        border-top: 1px solid var(--border-color);
+    }
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn-primary {
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: background 0.2s;
+    }
+
+    .btn-secondary {
+        background-color: transparent;
+        color: var(--secondary-color);
+        border: 2px solid var(--border-color);
+        padding: 12px 30px;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        background: #2980b9;
+    }
+
+    .btn-secondary:hover {
+        background-color: var(--background-color);
+        border-color: var(--secondary-color);
+    }
+
+    .history-title {
+        color: var(--primary-color);
+        font-size: 2rem;
+        margin: 0;
+        flex-shrink: 0;
+    }
+</style>

@@ -1,0 +1,109 @@
+﻿@using TSZH_Komarov.Viewmodels
+@model List<TszhSwitcherItem>
+
+@if (Model != null && Model.Any())
+{
+    var currentTszhId = ViewBag.CurrentTszhId;
+    var currentTszh = currentTszhId != null ? 
+        Model.FirstOrDefault(t => t.TszhId.ToString() == currentTszhId) : null;
+
+    <div class="tszh-switcher">
+        @if (currentTszh != null)
+        {
+            <div class="current-tszh">
+                <div class="tszh-name">@currentTszh.Name</div>
+                <div class="tszh-address">@currentTszh.Address</div>
+            </div>
+        }
+        
+        <div class="tszh-list">
+            @foreach (var tszh in Model)
+            {
+                if (tszh.TszhId.ToString() != currentTszhId?.ToString())
+                {
+                    <form asp-controller="User" asp-action="SetCurrentTszh" method="post">
+                        <input type="hidden" name="tszhId" value="@tszh.TszhId" />
+                        <button type="submit" class="tszh-item">
+                            <div class="tszh-item-name">@tszh.Name</div>
+                            <div class="tszh-item-address">@tszh.Address</div>
+                        </button>
+                    </form>
+                }
+            }
+        </div>
+    </div>
+}
+<style>
+    /* Основной контейнер */
+    .tszh-switcher {
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+        width: 100%;
+    }
+
+    /* Текущее ТСЖ */
+    .current-tszh {
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .tszh-name {
+        font-weight: 600;
+        font-size: 1.25rem;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+
+    .tszh-address {
+        font-size: 0.95rem;
+        color: #7f8c8d;
+    }
+
+    /* Заголовок списка */
+    .switch-title {
+        font-weight: 500;
+        color: #3498db;
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+    }
+
+    /* Список ТСЖ */
+    .tszh-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    /* Элемент списка */
+    .tszh-item {
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        padding: 12px 15px;
+        border: none;
+        text-align: left;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        width: 100%;
+    }
+
+        .tszh-item:hover {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        }
+
+    .tszh-item-name {
+        font-weight: 500;
+        color: #2c3e50;
+        font-size: 0.95rem;
+    }
+
+    .tszh-item-address {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+    }
+</style>

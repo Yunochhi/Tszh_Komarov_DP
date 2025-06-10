@@ -1,0 +1,364 @@
+﻿@using TSZH_Komarov.Viewmodels.Forum
+
+@{
+    ViewData["Title"] = Model.Topic.Name;
+}
+
+@model TopicViewModel
+@{
+    var user = User;
+    bool isAdmin = false;
+    if (user.FindFirst("role")?.Value == "admin")
+    {
+        isAdmin = true;
+    }
+}
+
+<link rel="stylesheet" href="~/css/notify.css" asp-append-version="true" />
+
+<div class="forum-container">
+    <div class="topic-header">
+        <div class="topic-header-top">
+            <h1 class="topic-title">@Model.Topic.Name</h1>
+            <span class="topic-author">@Model.Topic.AuthorName</span>
+        </div>
+
+        <div class="topic-description">
+            @Model.Topic.Description
+        </div>
+
+        <div class="topic-header-bottom">
+            <span class="topic-date">@Model.Topic.Date.ToString("yyyy-MM-dd HH:mm")</span>
+            @if (isAdmin)
+            {
+                <form asp-action="DeleteTopic" method="post" class="delete-topic-form">
+                    <input type="hidden" name="topicId" value="@Model.Topic.TopicId" />
+                    <input type="hidden" name="categoryId" value="@Model.Topic.ForumCategorieId" />
+                    <button type="submit" class="btn-delete">Удалить тему</button>
+                </form>
+            }
+        </div>
+    </div>
+
+    <div class="comments-container">
+        @for (int i = 0; i < Model.Comments.Count; i++)
+        {
+            var comment = Model.Comments[i];
+            <div class="comment">
+                <div class="comment-header">
+                    @*  <span class="comment-number">#@(i + 1)</span> *@
+                    <span class="comment-author">@comment.AuthorName</span>
+                    @if (isAdmin)
+                    {
+                        <form asp-action="DeleteComment" method="post" class="delete-comment-form">
+                            <input type="hidden" name="commentId" value="@comment.TopicCommentId" />
+                            <input type="hidden" asp-for="@comment.TopicId" value="@comment.TopicId" />
+                            @* <input type="hidden" name="topicsId " value="@comment.TopicId" /> *@
+                            <button type="submit" class="delete-comment-button" title="Удалить комментарий">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                                </svg>
+                            </button>
+                        </form>
+                    } 
+                </div>
+                <div class="comment-body">
+                    @comment.Description
+                </div>
+                <div class="comment-footer">
+                    <span class="comment-date">@comment.Date.ToString("yyyy-MM-dd HH:mm")</span>
+                    <div class="comment-actions">
+                        <div class="vote-section">
+                            <form asp-action="Vote" method="post">
+                                <input type="hidden" name="commentId" value="@comment.TopicCommentId" />
+                                <button type="submit" class="vote-button">↑</button>
+                                <span class="votes-count">@comment.VotesCount</span>
+                            </form>
+                        </div>
+                        <button class="reply-button">Ответить</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="add-comment">
+        <h3>Оставить комментарий</h3>
+        <form asp-action="AddComment" method="post">
+            <input type="hidden" name="topicId" value="@Model.Topic.TopicId" />
+            <textarea name="description" rows="4" maxlength="100" required placeholder="Напиши ваш комментарий здесь..."></textarea>
+            <button type="submit" class="btn-submit">Отправить</button>
+        </form>
+    </div>
+</div>
+
+<div class="container">
+    @if (TempData["Message"] != null)
+    {
+        <div class="auto-hide">@TempData["Message"]</div>
+    }
+</div>
+
+<style>
+    :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #34495e;
+        --accent-color: #3498db;
+        --background-color: #f8f9fa;
+        --border-color: #dee2e6;
+        --text-muted: #6c757d;
+        --warning-color: #ffc107;
+    }
+
+    .delete-comment-form {
+        margin-left: auto; 
+    }
+
+    .delete-comment-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: black;
+        transition: color 0.2s;
+        border-radius: 4px;
+    }
+
+        .delete-comment-button svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .delete-comment-button:hover {
+            color: #dc3545; 
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+
+    .delete-topic-form {
+        margin-left: auto;
+    }
+
+    .btn-delete {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 9px 14px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+        .btn-delete:hover {
+            background-color: #bb2d3b;
+            }
+
+        .btn-delete::before {
+            font-size: 1rem;
+            }
+    .forum-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .topic-header {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .topic-header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .topic-title {
+        color: var(--primary-color);
+        font-size: 1.8rem;
+        margin: 0;
+    }
+
+    .topic-author {
+        font-weight: 500;
+        color: var(--text-muted);
+        font-size: 1rem;
+    }
+
+    .topic-description {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+        color: var(--secondary-color);
+        padding: 0 5px;
+    }
+
+    .topic-header-bottom {
+        display: flex;
+        justify-content: flex-start;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .topic-date {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+    }
+
+    .comments-container {
+        margin-top: 30px;     
+        border-radius: 8px;
+        padding: 5px;
+    }
+
+    .comment {
+        background: white; 
+        margin: 5px;
+        margin-bottom: 28px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08); 
+    }
+
+        .comment:last-child {
+            border-bottom: none;
+        }
+
+    .comment-header {
+        background: #808a92;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+        padding: 10px;
+    }
+
+    .comment-number {
+        font-weight: bold;
+        color: var(--background-color);
+        font-size: 0.9rem;
+    }
+
+    .comment-author {
+        font-weight: 500;
+        color: var(--background-color);
+    }
+
+    .comment-body {
+        color: var(--secondary-color);
+        padding: 12px;
+    }
+
+    .comment-footer {
+        border-top: 1px solid var(--text-muted);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 5px;
+        padding: 3px;
+    }
+
+    .comment-date {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    .comment-actions {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .vote-section {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .vote-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.2rem;
+        color: var(--text-muted);
+        padding: 5px;
+    }
+
+        .vote-button:hover {
+            color: var(--accent-color);
+        }
+
+    .votes-count {
+        font-weight: bold;
+        font-size: 0.9rem;
+        color: var(--primary-color);
+    }
+
+    .reply-button {
+        background: none;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 5px 15px;
+        cursor: pointer;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+        .reply-button:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+    .add-comment {
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        margin-top: 8px;
+    }
+
+        .add-comment h3 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+    textarea {
+        width: 100%;
+        padding: 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        margin-bottom: 15px;
+        resize: vertical;
+        min-height: 120px;
+        font-family: inherit;
+        font-size: 1rem;
+    }
+
+    .btn-submit {
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background 0.2s;
+    }
+
+        .btn-submit:hover {
+            background: #2980b9;
+        }
+
+</style>

@@ -1,0 +1,205 @@
+﻿@using TSZH_Komarov.Viewmodels.Forum
+@model TopicsViewModel
+@{
+    ViewData["Title"] = Model.Category.Name;
+}
+@{
+    var user = User;
+    bool isAdmin = false;
+    if (user.FindFirst("role")?.Value == "admin")
+    {
+        isAdmin = true;
+    }
+}
+<link rel="stylesheet" href="~/css/notify.css" asp-append-version="true" />
+
+<div class="forum-container">
+    <div class="forum-header">
+        <h1 class="forum-title">@Model.Category.Name</h1> 
+        @if (isAdmin)
+        {
+            <a asp-controller="Forum" asp-action="ForumPreTopic" class="history-link">Темы на модерации</a>
+        }
+    </div>
+
+    <div class="topics-list">
+        @foreach (var topic in Model.Topics)
+        {
+            <a asp-controller="Forum"
+               asp-action="ForumTopic"
+               asp-route-topicId="@topic.TopicId"
+               class="topic-card">
+                <h3>@topic.Name</h3>
+                <div class="topic-meta">
+                    <span>@topic.Date.ToString("dd.MM.yyyy HH:mm")</span>
+                    <span>Комментариев: @topic.CommentCount</span>
+                </div>
+            </a>
+        }        
+    </div>
+
+    <div class="add-topic">
+        <h3>Предложите свою тему</h3>
+        <form asp-controller="Forum" asp-action="addTopic" method="post">
+            <input type="hidden" name="categoryId" value="@Model.Category.ForumCategorieId" />
+
+            <div class="form-group">
+                <label for="topicName">Название темы</label>
+                <input type="text" id="topicName" name="name" class="form-control" maxlength="60" required
+                       placeholder="Введите название темы">
+            </div>
+
+            <div class="form-group">
+                <label for="topicDescription">Описание</label>
+                <textarea id="topicDescription" name="description" class="form-control" rows="4" maxlength="350" required
+                          placeholder="Опишите вашу тему"></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit">Создать тему</button>
+        </form>
+    </div>
+</div>
+
+<div class="container">
+    @if (TempData["Message"] != null)
+    {
+        <div class="auto-hide">@TempData["Message"]</div>
+    }
+</div>
+
+<style>
+    :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #34495e;
+        --accent-color: #3498db;
+        --background-color: #f8f9fa;
+        --border-color: #dee2e6;
+        --text-muted: #6c757d;
+    }
+
+    .history-link {
+        font-size: 16px;
+        color: #FCA311;
+        font-weight: 500;
+        margin-top: 10px;
+    }
+
+    .forum-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .forum-header {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .forum-title {
+        color: var(--primary-color);
+    }
+
+
+    .topics-list {
+        display: grid;
+        gap: 15px;
+        margin-bottom: 2em;
+    }
+
+    .topic-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        color: var(--primary-color);
+        display: block;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .topic-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .topic-card h3 {
+        margin-bottom: 10px;
+        color: var(--primary-color);
+    }
+
+    .topic-meta {
+        display: flex;
+        justify-content: space-between;
+        color: var(--primary-color);
+        font-size: 0.9em;
+    }
+
+    .add-topic {
+        background: white;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: 1px solid var(--border-color);
+    }
+
+        .add-topic h3 {
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            font-size: 1.4rem;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--secondary-color);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+    }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .btn-submit {
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: background 0.2s;
+    }
+
+        .btn-submit:hover {
+            background: #2980b9;
+        }
+</style>

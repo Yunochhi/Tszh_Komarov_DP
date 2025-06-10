@@ -1,0 +1,85 @@
+﻿@using TSZH_Komarov.Viewmodels
+@using TSZH_Komarov.Viewmodels.Readings
+
+@{
+    ViewData["Title"] = "История показаний";
+}
+
+@model List<MeterReadingHistViewModel>
+<link rel="stylesheet" href="~/css/meterHist.css" asp-append-version="true" />
+
+<div class="history-container">
+    <div class="meter-history-header">
+        <h1 class="history-title">История показаний</h1>
+    </div>
+
+    @foreach (var meter in Model)
+    {
+        <div class="history-card">
+            <div class="card-header">
+                <h3 class="text-name">@meter.ReadingDate.ToString("dd.MM.yyyy HH:mm")</h3>
+
+                @{
+                    // Группируем показания по типам
+                    var electricity = meter.readingHistItems
+                    .Where(i => i.MeterName.Contains("Эл") || i.MeterName.Contains("Электричество"))
+                    .ToList();
+
+                    var water = meter.readingHistItems
+                    .Where(i => i.MeterName.Contains("ВС") || i.MeterName.Contains("Осн"))
+                    .ToList();
+
+                    var other = meter.readingHistItems
+                    .Except(electricity.Concat(water))
+                    .ToList();
+                }
+
+                <div class="meter-grid">
+                    <!-- Группа для электричества -->
+                    @if (electricity.Any())
+                    {
+                        <div class="meter-group">
+                            <span class="group-title">Электричество</span>
+                            <div class="group-items">
+                                @foreach (var read in electricity)
+                                {
+                                    <div class="group-item">
+                                        <span class="text-hist">@read.MeterName</span>
+                                        <span class="text-hist">@read.Value <span class="unit">@read.Unit</span></span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Группа для воды -->
+                    @if (water.Any())
+                    {
+                        <div class="meter-group">
+                            <span class="group-title">Вода</span>
+                            <div class="group-items">
+                                @foreach (var read in water)
+                                {
+                                    <div class="group-item">
+                                        <span class="text-hist">@read.MeterName</span>
+                                        <span class="text-hist">@read.Value <span class="unit">@read.Unit</span></span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Остальные показания -->
+                    @foreach (var read in other)
+                    {
+                        <div class="meter-item">
+                            <span class="text-hist">@read.MeterName</span>
+                            <span class="text-hist">@read.Value <span class="unit">@read.Unit</span></span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+

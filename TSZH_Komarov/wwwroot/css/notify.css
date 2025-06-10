@@ -1,0 +1,57 @@
+﻿.auto-hide {
+    position: fixed;
+    bottom: 60px; /* Отступ от низа */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999; /* Максимальный приоритет */
+    max-width: 90%;
+    width: max-content;
+    padding: 15px 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: fixedHideAnimation 3s forwards;
+    color: #FCA311;
+    background: #14213D;
+
+}
+/*@keyframes fixedHideAnimation {
+    0% {
+        opacity: 0.86;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    90% {
+        opacity: 0.86;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-100%);
+        visibility: hidden;
+    }
+}*/
+
+@keyframes fixedHideAnimation {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+
+    10% {
+        opacity: 0.9;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    90% {
+        opacity: 0.9;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-100%);
+        visibility: hidden;
+    }
+}
+

@@ -1,0 +1,82 @@
+﻿@using TSZH_Komarov.Viewmodels
+
+@{
+    ViewData["Title"] = "Вызов служб";
+}
+
+@model ServiceViewModel
+<link rel="stylesheet" href="~/css/services.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/notify.css" asp-append-version="true" />
+
+<div class="service-container">
+    <div class="service-header">
+        <h1 class="service-title">Вызов служб</h1>
+        <a asp-controller="Services" asp-action="ServiceHistory" class="history-link">История заявок</a>
+    </div>
+
+    <!-- Блок активных заявок -->
+    @if (Model.ActiveRequests != null && Model.ActiveRequests.Any())
+    {
+        <div class="active-requests-section">
+            <h2 class="section-title">Активные заявки</h2>
+
+            @foreach (var request in Model.ActiveRequests)
+            {
+                <div class="service-card active-request">
+                    <div class="card-header">
+                        <h3 class="text-name">@request.ServiceType.Name</h3>
+                        <span class="text-hist">
+                            Дата заявки: @request.CreatedDate.ToString("dd.MM.yyyy HH:mm")
+                        </span>
+                    </div>
+                    <div class="service-footer">
+                        <span class="status-badge status-in-progress">
+                            @request.Status
+                        </span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <h2 class="section-title">Доступные службы</h2>
+
+    @foreach (var service in Model.Services)
+    {
+        <div class="service-card">
+            <form method="post">
+                <input type="hidden" name="serviceTypeId" value="@service.ServiceTypeId" />
+
+                <div class="card-header">
+                    <h3 class="text-name">@service.Name</h3>
+                    <p class="text-desc">@service.Description</p>
+                </div>
+                <div class="service-footer">
+                    <button type="submit" class="request-button">
+                        Оформить заявку
+                    </button>
+                </div>
+            </form>
+        </div>
+    }
+</div>
+
+<div class="container">
+    @if (TempData["Message"] != null)
+    {
+        <div class="auto-hide">@TempData["Message"]</div>
+    }
+</div>
+
+@functions {
+    string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "В обработке" => "status-in-progress",
+            "Выполнено" => "status-completed",
+            "Отменено" => "status-cancelled",
+            _ => ""
+        };
+    }
+}
