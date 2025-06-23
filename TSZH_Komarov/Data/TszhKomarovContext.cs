@@ -65,8 +65,8 @@ public partial class TszhKomarovContext : DbContext
             entity.HasIndex(e => e.TszhId, "IX_Announcements_TszhId");
 
             entity.Property(e => e.Date).HasColumnType("datetime");
-            entity.Property(e => e.Description).HasMaxLength(350);
-            entity.Property(e => e.Topic).HasMaxLength(40);
+            entity.Property(e => e.Description).HasMaxLength(800);
+            entity.Property(e => e.Topic).HasMaxLength(100);
 
             entity.HasOne(d => d.Tszh).WithMany(p => p.Announcements)
                 .HasForeignKey(d => d.TszhId)
@@ -97,9 +97,10 @@ public partial class TszhKomarovContext : DbContext
         {
             entity.HasKey(e => e.UserId).HasName("PK_Users");
 
-            entity.Property(e => e.ChatId).HasMaxLength(400);
+            entity.Property(e => e.ChatId).HasMaxLength(80);
             entity.Property(e => e.Email).HasMaxLength(50);
             entity.Property(e => e.Fullname).HasMaxLength(50);
+            entity.Property(e => e.LastReminderSent).HasColumnType("datetime");
             entity.Property(e => e.Password).HasMaxLength(200);
             entity.Property(e => e.PhoneNumber).HasMaxLength(50);
             entity.Property(e => e.Salt).HasMaxLength(50);
@@ -157,10 +158,10 @@ public partial class TszhKomarovContext : DbContext
 
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.Description)
-                .HasMaxLength(100)
+                .HasMaxLength(400)
                 .IsFixedLength();
             entity.Property(e => e.Topic)
-                .HasMaxLength(50)
+                .HasMaxLength(100)
                 .IsFixedLength();
 
             entity.HasOne(d => d.User).WithMany(p => p.Notifications)
@@ -186,7 +187,7 @@ public partial class TszhKomarovContext : DbContext
         {
             entity.HasIndex(e => e.PollId, "IX_PollOptions_PollId");
 
-            entity.Property(e => e.OptionText).HasMaxLength(50);
+            entity.Property(e => e.OptionText).HasMaxLength(100);
 
             entity.HasOne(d => d.Poll).WithMany(p => p.PollOptions)
                 .HasForeignKey(d => d.PollId)
@@ -204,17 +205,21 @@ public partial class TszhKomarovContext : DbContext
         modelBuilder.Entity<PreTopic>(entity =>
         {
             entity.Property(e => e.Date).HasColumnType("datetime");
-            entity.Property(e => e.Description).HasMaxLength(250);
-            entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(450);
+            entity.Property(e => e.Name).HasMaxLength(120);
         });
 
         modelBuilder.Entity<ServiceRequest>(entity =>
         {
+            entity.HasKey(e => e.ServiceRequestId).HasName("PK_ServiceRequests_1");
+
             entity.HasIndex(e => e.ServiceTypeId, "IX_ServiceRequests_ServiceTypeId");
 
             entity.HasIndex(e => e.UserId, "IX_ServiceRequests_UserId");
 
+            entity.Property(e => e.AdminComment).HasMaxLength(400);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.Note).HasMaxLength(400);
             entity.Property(e => e.Status).HasMaxLength(50);
 
             entity.HasOne(d => d.ServiceType).WithMany(p => p.ServiceRequests)

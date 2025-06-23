@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Telegram.Bot.Types;
 using TSZH_Komarov.Data;
 using TSZH_Komarov.Models;
 using TSZH_Komarov.Viewmodels;
@@ -41,31 +42,35 @@ namespace TSZH_Komarov.Services
         }
 
         public async Task<string> RegistrationAsync(RegistrationViewModel model)
-        { 
-            if (await context.AppUsers.AnyAsync(c => c.Email == model.Email || c.PhoneNumber == model.PhoneNumber))
-            {
-                return "Введенные почта или телефон уже существуют в системе!";
-            }
+        {
+            
             try
             {
-                AppUser toAdd = new AppUser
+                AppUser? toAdd = null;
+                if (await context.AppUsers.AnyAsync(c => c.Email == model.Email || c.PhoneNumber == model.PhoneNumber))
                 {
-                    Fullname = model.Fullname,
-                    Email = model.Email,
-                    Salt = GetSalt(),
-                    Role = 0,
-                    PhoneNumber = model.PhoneNumber
-                };
-                toAdd.Password = GetSha256(model.Password, toAdd.Salt);
+                    toAdd = await context.AppUsers.FirstOrDefaultAsync(c => c.Email == model.Email);
+                }
+
+                if (toAdd == null)
+                {
+                    toAdd = new AppUser
+                    {
+                        Fullname = model.Fullname,
+                        Email = model.Email,
+                        Salt = GetSalt(),
+                        Role = 0,
+                        PhoneNumber = model.PhoneNumber,
+                        ReminderDaysBefore = 3,
+                        IsFirstLogin = 0,
+                    };
+                    toAdd.Password = GetSha256(model.Password, toAdd.Salt);
+
+                    await context.AppUsers.AddAsync(toAdd);
+                    await context.SaveChangesAsync();
+                }
 
                 var apartment = await context.Apartments.FindAsync(model.SelectedApartmentId);
-                if (apartment == null)
-                {
-                    return "при выборе квартиры произошла ошибка!";
-                }
-                await context.AppUsers.AddAsync(toAdd);
-                await context.SaveChangesAsync();
-
                 apartment.UserId = toAdd.UserId;
                 context.Update(apartment);
                 await context.SaveChangesAsync();
@@ -94,6 +99,15 @@ namespace TSZH_Komarov.Services
             int id = Convert.ToInt32(claimsUser.FindFirstValue("tszh"));
             var tszh = context.Tszhs.Find(id);
             return tszh;
+        }
+
+        public Apartment GetCurrAppartment()
+        {
+            var claimsUser = httpContextAccessor.HttpContext.User;
+            int id = Convert.ToInt32(claimsUser.FindFirst("appartment")?.Value);
+            var apart = context.Apartments.Include(h => h.House).Where(c => c.ApartmentId == id)
+                .FirstOrDefault();
+            return apart;
         }
 
         public List<TszhSwitcherItem> GetUserTszhList(int userId)
@@ -172,7 +186,7 @@ namespace TSZH_Komarov.Services
 
             return model;
         }
-
+      
         public async Task<List<ApartmentsItem>> GetApartmentsByHouseId(int houseId)
         {
             return await context.Apartments
@@ -183,6 +197,25 @@ namespace TSZH_Komarov.Services
                     Number = a.Number
                 })
                 .ToListAsync();
+        }
+
+        public Apartment GetApartments(int apartmentId)
+        {
+            var user = GetCurrUser();
+            var apartment = context.Apartments
+                .FirstOrDefault(a => a.ApartmentId == apartmentId && a.UserId == user.UserId);
+
+            return apartment;
+        }
+
+        public List<Apartment> GetUserApartmentList(int userId, int currentTszhId)
+        {
+            var apartments = context.Apartments
+                .Include(h => h.House)
+                .Where(a => a.UserId == userId && a.House.TszhId == currentTszhId)
+                .ToList();
+
+            return apartments;
         }
     }
 }

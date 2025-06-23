@@ -15,7 +15,11 @@ public partial class ServiceRequest
 
     public DateTime CreatedDate { get; set; }
 
-    public int TszhId { get; set; }
+    public string? Note { get; set; }
+
+    public string? AdminComment { get; set; }
+
+    public int ApartmentId { get; set; }
 
     public virtual ServiceType ServiceType { get; set; } = null!;
 

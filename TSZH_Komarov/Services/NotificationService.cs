@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Telegram.Bot.Requests;
+using Telegram.Bot.Types;
 using TSZH_Komarov.Models;
 
 namespace TSZH_Komarov.Services
@@ -14,12 +16,12 @@ namespace TSZH_Komarov.Services
             this.userService = userService;
         }
 
-        public List<Notification?> GetNotifications()
+        public List<Notification> GetNotifications()
         {
             int userId = userService.GetCurrUser().UserId;
             int tshzId = userService.GetCurrTszh().TszhId;
 
-            var notifications = context.Notifications.Where(u => u.UserId == userId && u.TszhId == tshzId).ToList();
+            var notifications = context.Notifications.Where(u => u.UserId == userId && u.TszhId == tshzId).OrderByDescending(r => r.CreatedDate).ToList();
 
             return notifications;
         }

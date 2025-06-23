@@ -23,6 +23,10 @@ public partial class AppUser
 
     public string? ChatId { get; set; }
 
+    public int ReminderDaysBefore { get; set; }
+
+    public DateTime? LastReminderSent { get; set; }
+
     public virtual ICollection<Apartment> Apartments { get; set; } = new List<Apartment>();
 
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();

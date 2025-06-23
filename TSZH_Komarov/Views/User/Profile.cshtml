@@ -39,17 +39,21 @@
                 <input type="hidden" asp-for="@Model.PersonalAccount" />
                 <input type="hidden" asp-for="@Model.NewPassword" />
                 <input type="hidden" asp-for="@Model.OldPassword" />
-                <input type="hidden" asp-for="@Model.NotificationMethod" />
+                <input type="hidden" asp-for="@Model.LastReminderSent" />
+                <input type="hidden" asp-for="@Model.ReminderDaysBefore" />
+                <input type="hidden" asp-for="@Model.ChatId" />
+                <input type="hidden" asp-for="@Model.OldPasswordFixed" />
+                <input type="hidden" asp-for="@Model.Salt" />
                 <div class="profile-section">
                     <div class="form-group">
                         <label asp-for="FullName">ФИО</label>
                         <input asp-for="FullName" class="form-control" />
                         <span asp-validation-for="FullName" class="text-danger"></span>
                     </div>
-                    <div class="info-group">
+                   @*  <div class="info-group">
                         <label>Лицевой счет</label>
                         <div class="info-value">@Model.PersonalAccount</div>
-                    </div>
+                    </div> *@
                 </div>
 
                 <div class="profile-section">
@@ -80,7 +84,11 @@
                 <input type="hidden" asp-for="@Model.Email" />
                 <input type="hidden" asp-for="@Model.FullName" />
                 <input type="hidden" asp-for="@Model.PhoneNumber" />
-                <input type="hidden" asp-for="@Model.NotificationMethod" />
+                <input type="hidden" asp-for="@Model.LastReminderSent" />
+                <input type="hidden" asp-for="@Model.ReminderDaysBefore" />
+                <input type="hidden" asp-for="@Model.ChatId" />
+                <input type="hidden" asp-for="@Model.OldPasswordFixed" />
+                <input type="hidden" asp-for="@Model.Salt" />
                 <div class="profile-section">
                     <div class="form-group">
                         <label asp-for="OldPassword">Текущий пароль</label>
@@ -108,44 +116,371 @@
                 <input type="hidden" asp-for="@Model.PhoneNumber" />
                 <input type="hidden" asp-for="@Model.NewPassword" />
                 <input type="hidden" asp-for="@Model.OldPassword" />
+                <input type="hidden" asp-for="@Model.OldPasswordFixed" />
+                <input type="hidden" asp-for="@Model.Salt" />
 
-                <div class="profile-section">
-                    <h3 class ="section-title">Канал уведомлений</h3>
-
-                    <div class="form-group">
-                        <div class="radio-group">
-                            <label class="radio-label">
-                                <input type="radio" asp-for="NotificationMethod" value="1" />
-                                <span class="radio-custom"></span>
-                                <div class="text">
-                                    <span class="title">Телефон:</span>
-                                    <span class="value">@Model.PhoneNumber</span>
-                                </div>
-                            </label>
-
-                            <label class="radio-label">
-                                <input type="radio" asp-for="NotificationMethod" value="0" />
-                                <span class="radio-custom"></span>
-                                <div class="text">
-                                    <span class="title">Email:</span>
-                                    <span class="value">@Model.Email</span>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="action-buttons">
-                        <button type="submit" class="btn-save">Сохранить изменения</button> 
+                <h3 class="section-title">Напоминания о показаниях счетчиков</h3>
+                <div class="form-group">
+                    <label>Период напоминания:</label>
+                    <div class="radio-group vertical">
+                        <label class="radio-label">
+                            <input type="radio" asp-for="ReminderDaysBefore" value="0" />
+                            <span class="radio-custom"></span>
+                            В день подачи (20 число)
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" asp-for="ReminderDaysBefore" value="1" />
+                            <span class="radio-custom"></span>
+                            За 1 день
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" asp-for="ReminderDaysBefore" value="3" />
+                            <span class="radio-custom"></span>
+                            За 3 дня
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" asp-for="ReminderDaysBefore" value="7" />
+                            <span class="radio-custom"></span>
+                            За 7 дней
+                        </label>
                     </div>
                 </div>
+
+                <div class="profile-section">
+                    <h3 class="section-title">Telegram уведомления</h3>
+
+                    <div id="telegramConnectContainer">
+                        @if (string.IsNullOrEmpty(Model.ChatId))
+                        {
+                            <div class="text-center">
+                                <p>Получайте уведомления прямо в Telegram</p>
+                                <button id="bindTelegramBtn" class="btn-telegram">
+                                    <i class="bi bi-telegram"></i> Привязать Telegram
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="telegram-bound">
+                                <div class="bound-status">
+                                    <i class="bi bi-check-circle-fill success-icon"></i>
+                                    <span class="bound-text">Ваш Telegram успешно привязан!</span>
+                                </div>
+                                <div class="chat-id">Chat ID: @Model.ChatId</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <label>Последнее напоминание:</label>
+                    <div class="info-value">
+                        @(Model.LastReminderSent?.ToString("dd.MM.yyyy") ?? "еще не отправлялось")
+                    </div>
+                </div>
+
+                 <div class="action-buttons">
+                        <button type="submit" class="btn-save">Сохранить изменения</button> 
+                 </div>
             </form>
         </div>
     </div>
 </div>
+
 <div class="container">
     @if (TempData["Message"] != null)
     {
         <div class="auto-hide">@TempData["Message"]</div>
     }
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Восстановление активной вкладки из sessionStorage
+    const activeTab = sessionStorage.getItem('activeTab');
+    if (activeTab) {
+        document.getElementById(activeTab).checked = true;
+    }
+    
+    // Сохранение активной вкладки при переключении
+    document.querySelectorAll('.tab-label').forEach(label => {
+        label.addEventListener('click', function() {
+            sessionStorage.setItem('activeTab', this.htmlFor);
+        });
+    });
+
+    // Инициализация обработчиков событий
+    const bindButton = document.getElementById('bindTelegramBtn');
+    if (bindButton) {
+        bindButton.addEventListener('click', bindTelegramHandler);
+    }
+
+    // Обработчик для кнопки проверки привязки
+    document.addEventListener('click', function(event) {
+        if (event.target.closest('#checkBindingBtn')) {
+            checkTelegramBinding();
+        }
+    });
+});
+
+async function bindTelegramHandler() {
+    const btn = this;
+    btn.disabled = true;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Подготовка...';
+
+    try {
+        const response = await fetch('/profile/generate-telegram-link');
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Ошибка сервера');
+        }
+
+        const data = await response.json();
+        window.open(data.link, '_blank');
+        showInstruction(data.link);
+    } catch (error) {
+        console.error('Ошибка при генерации ссылки:', error.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
+function showInstruction(telegramLink) {
+    const container = document.getElementById('telegramConnectContainer');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="telegram-instruction">
+            <h4 class="instruction-title">Почти готово!</h4>
+            <div class="instruction-content">
+                <ol class="telegram-steps">
+                    <li>Перейдите в Telegram и нажмите <strong>Start</strong> в диалоге с ботом</li>
+                    <li>Вернитесь в приложение и нажмите кнопку ниже</li>
+                </ol>
+
+                <div class="instruction-actions">
+                    <a href="${telegramLink}" target="_blank" class="btn-manual">
+                        <i class="bi bi-link-45deg"></i> Перейти в Telegram вручную
+                    </a>
+                    <button id="checkBindingBtn" class="btn-confirm">
+                        <i class="bi bi-check-circle"></i> Я выполнил привязку
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+async function checkTelegramBinding() {
+    const checkBtn = document.getElementById('checkBindingBtn');
+    if (!checkBtn) return;
+
+    try {
+        checkBtn.disabled = true;
+        const originalHtml = checkBtn.innerHTML;
+        checkBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Проверка...';
+
+        const response = await fetch('/profile/check-telegram-binding');
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        const result = await response.json();
+        if (result.isBound) {
+            const container = document.getElementById('telegramConnectContainer');
+            container.innerHTML = `
+                <div class="telegram-bound">
+                    <div class="bound-status">
+                        <i class="bi bi-check-circle-fill success-icon"></i>
+                        <span class="bound-text">Ваш Telegram успешно привязан!</span>
+                    </div>
+                    <div class="chat-id">Chat ID: ${result.chatId}</div>
+                </div>
+            `;
+        } else {
+            console.warn('Привязка не обнаружена. Убедитесь, что вы нажали Start в Telegram');
+        }
+    } catch (error) {
+        console.error('Ошибка при проверке привязки:', error.message);
+    } finally {
+        if (checkBtn) {
+            checkBtn.disabled = false;
+            checkBtn.innerHTML = '<i class="bi bi-check-circle"></i> Я выполнил привязку';
+        }
+    }
+}
+
+// Добавление стилей для элементов Telegram
+const style = document.createElement('style');
+style.textContent = `
+    /* Основные стили для контейнера */
+    #telegramConnectContainer {
+        margin: 20px 0;
+        padding: 0;
+    }
+    
+    /* Стили для начального состояния */
+    #telegramConnectContainer > .text-center {
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    #telegramConnectContainer > .text-center p {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+        color: #333;
+    }
+    
+    .btn-telegram {
+        background-color: #0088cc;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 6px;
+        border: none;
+        font-weight: 500;
+        transition: background-color 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-telegram:hover {
+        background-color: #006699;
+        color: white;
+    }
+    
+    .btn-telegram:disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+    }
+    
+    /* Стили для инструкции */
+    .telegram-instruction {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .instruction-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #0088cc;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eaeaea;
+    }
+    
+    .instruction-content {
+        padding: 0 15px;
+    }
+    
+    /* Стили для списка шагов */
+    .telegram-steps {
+        padding-left: 25px;
+        margin: 20px 0;
+        font-size: 1.1rem;
+    }
+    
+    .telegram-steps li {
+        margin-bottom: 15px;
+        line-height: 1.6;
+        padding-left: 10px;
+    }
+    
+    /* Стили для кнопок */
+    .instruction-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 25px;
+    }
+    
+    .btn-manual {
+        background-color: #f0f0f0;
+        color: #333;
+        padding: 12px 20px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        font-weight: 500;
+        text-align: center;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.2s;
+    }
+    
+    .btn-manual:hover {
+        background-color: #e0e0e0;
+        text-decoration: none;
+    }
+    
+    .btn-confirm {
+        background-color: #28a745;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 6px;
+        border: none;
+        font-weight: 500;
+        transition: background-color 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .btn-confirm:hover {
+        background-color: #218838;
+    }
+    
+    .btn-confirm:disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+    }
+    
+    /* Стили для состояния "привязан" */
+    .telegram-bound {
+        background-color: #d4edda;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .bound-status {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+    
+    .success-icon {
+        color: #28a745;
+        font-size: 1.8rem;
+    }
+    
+    .bound-text {
+        font-size: 1.3rem;
+        font-weight: 500;
+        color: #155724;
+    }
+    
+    .chat-id {
+        font-size: 0.95rem;
+        color: #0c5460;
+        background-color: rgba(255,255,255,0.5);
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin-top: 10px;
+        display: inline-block;
+    }
+`;
+document.head.appendChild(style);
+</script>
 

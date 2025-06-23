@@ -1,4 +1,4 @@
-﻿*{
+﻿* {
     margin: 0;
 }
 
@@ -10,6 +10,52 @@
     --border-color: #dee2e6;
     --text-muted: #6c757d;
 }
+
+.title-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+.service-note {
+    margin: 10px 0;
+}
+.request-note {
+    font-size: 1em;
+    margin-bottom: 10px;
+}
+
+.admin-comment-view {
+    font-size: 1em;
+    margin-bottom: 10px;
+}
+
+.serviceHistory-note {
+    margin: 10px 0;
+}
+
+.note-textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+    min-height: 60px;
+    font-family: inherit;
+}
+
+.moderation-icon {
+    color: #FCA311;
+    font-size: 1.8rem;
+    transition: all 0.3s ease;
+    margin-left: 15px;
+}
+
+    .moderation-icon:hover {
+        color: #e69100;
+        transform: rotate(30deg);
+    }
+
 .active-requests-section {
     padding-bottom: 10px;
 }
@@ -30,6 +76,7 @@
     .active-request .text-name {
         color: var(--primary-color);
     }
+
 .service-container {
     max-width: 1000px;
     margin: 0 auto;
@@ -46,6 +93,7 @@
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
+
 .service-header {
     display: flex;
     flex-direction: column;
@@ -55,6 +103,7 @@
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
+
 .service-title {
     color: var(--primary-color);
     font-size: 2rem;
@@ -85,12 +134,10 @@
     color: var(--secondary-color);
 }
 
-
 .card-header {
     color: var(--primary-color);
     margin-bottom: 15px;
 }
-
 
 .filter-buttons {
     display: flex;
@@ -108,16 +155,16 @@
     font-size: 0.9rem;
 }
 
-.filter-button:hover {
-     background: var(--accent-color);
-     color: white;
-}
+    .filter-button:hover {
+        background: var(--accent-color);
+        color: white;
+    }
 
-.filter-button.active {
-     background: var(--accent-color);
-     color: white;
-     cursor: default;
-}
+    .filter-button.active {
+        background: var(--accent-color);
+        color: white;
+        cursor: default;
+    }
 
 .service-card {
     background: white;
@@ -129,10 +176,10 @@
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
-.service-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
+    .service-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
 
 .request-button {
     background: var(--accent-color);
@@ -161,17 +208,39 @@
 }
 
 .status-in-progress {
-    background: #fff3cd; /* Желтый */
+    background: #fff3cd;
     color: #856404;
 }
 
 .status-completed {
-    background: #d4edda; /* Зеленый */
+    background: #d4edda;
     color: #155724;
 }
 
 .status-cancelled {
-    background: #f8d7da; /* Красный */
+    background: #f8d7da;
     color: #721c24;
 }
 
+/* Новые стили для структуры с ТСЖ */
+.main-page-layout {
+    display: flex;
+    max-width: 1400px;
+    margin: 0 auto;
+    gap: 40px;
+    padding: 0 20px;
+}
+
+.tszh-selection-container {
+    flex: 0 0 300px;
+    position: relative;
+    padding-top: 20px;
+}
+
+.main-content-container {
+    flex: 1;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}

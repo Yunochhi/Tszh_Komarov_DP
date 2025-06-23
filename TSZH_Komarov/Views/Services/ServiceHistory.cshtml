@@ -1,4 +1,5 @@
 ﻿@using TSZH_Komarov.Viewmodels
+@using TSZH_Komarov.Viewmodels.Service
 
 @{
     ViewData["Title"] = "История заявок";
@@ -37,6 +38,20 @@
         <div class="service-card">
             <div class="card-header">
                 <h3 class="text-name"> @request.ServiceType.Name</h3>
+                @if (!string.IsNullOrEmpty(request.Note))
+                {
+                    <div class="request-note">
+                        <strong>Ваше примечание:</strong>
+                        <p>@request.Note</p>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(request.AdminComment))
+                {
+                    <div class="admin-comment-view">
+                        <strong>Комментарий администратора:</strong>
+                        <p>@request.AdminComment</p>
+                    </div>
+                }
                 <span class="text-hist">
                     Дата заявки:  @request.CreatedDate           
                 </span>

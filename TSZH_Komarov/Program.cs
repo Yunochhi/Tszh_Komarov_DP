@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Telegram.Bot;
 using TSZH_Komarov.Data;
 using TSZH_Komarov.Services;
 
@@ -8,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 
 builder.Services.AddHttpContextAccessor();
+
+//cache
+builder.Services.AddMemoryCache();
 
 //services
 builder.Services.AddScoped<UserService>();
@@ -18,6 +22,12 @@ builder.Services.AddScoped<VotingService>();
 builder.Services.AddScoped<ServicesService>();
 builder.Services.AddScoped<ForumService>();
 builder.Services.AddScoped<NotificationService>();
+
+
+builder.Services.AddSingleton<TelegramService>();
+
+builder.Services.AddHostedService<TelegramPollingService>();
+builder.Services.AddHostedService<ReminderBackgroundService>();
 
 
 //auth
@@ -54,7 +64,5 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
-
 
 app.Run();

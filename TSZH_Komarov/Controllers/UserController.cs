@@ -1,15 +1,12 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Security.Principal;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+
 using TSZH_Komarov.Models;
 using TSZH_Komarov.Services;
-using Microsoft.AspNetCore.Identity;
 using TSZH_Komarov.Viewmodels.User;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
-using System;
 
 namespace TSZH_Komarov.Controllers
 {
@@ -18,12 +15,14 @@ namespace TSZH_Komarov.Controllers
     {
         private UserService userService;
         private ProfileService profileService;
+        private TelegramService telegramService;
         private readonly ILogger<UserController> logger;
-        public UserController(UserService userService, ProfileService profileService, ILogger<UserController> logger   )
+        public UserController(UserService userService, ProfileService profileService, ILogger<UserController> logger, TelegramService telegramService)
         {
             this.userService = userService;
             this.profileService = profileService;
             this.logger = logger;
+            this.telegramService = telegramService;
         }
 
         [HttpGet]
@@ -50,20 +49,26 @@ namespace TSZH_Komarov.Controllers
         [HttpPost]
         public async Task<IActionResult> SetCurrentTszh(int tszhId)
         { 
-            // Обновление claim
             var identity = (ClaimsIdentity)User.Identity;
             var existingClaim = identity.FindFirst("tszh");
             var existingName = identity.FindFirst("tszhName");
+            var existingAppart = identity.FindFirst("appartment");
 
-            if (existingClaim != null || existingName != null)
+            if (existingClaim != null || existingName != null || existingAppart != null)
             {
                 identity.RemoveClaim(existingClaim);
                 identity.RemoveClaim(existingName);
+                identity.RemoveClaim(existingAppart);
             }
 
             identity.AddClaim(new Claim("tszh", tszhId.ToString()));
+
             string tszhName = userService.GetCurrTszh().Name;
+            int currUserId = userService.GetCurrUser().UserId;
+            var appartList = userService.GetUserApartmentList(currUserId, tszhId);
+
             identity.AddClaim(new Claim("tszhName", tszhName));
+            identity.AddClaim(new Claim("appartment", appartList[0].ApartmentId.ToString()));
 
             string authType = CookieAuthenticationDefaults.AuthenticationScheme;
             ClaimsPrincipal principal = new ClaimsPrincipal(identity);
@@ -72,6 +77,34 @@ namespace TSZH_Komarov.Controllers
             await HttpContext.SignInAsync(authType, principal);
 
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SetCurrentApartment(int apartmentId)
+        {
+            var identity = (ClaimsIdentity)User.Identity;
+
+            var existingClaim = identity.FindFirst("appartment");
+
+            if (existingClaim != null)
+            {
+                identity.RemoveClaim(existingClaim);
+            }
+
+            var apartment = userService.GetApartments(apartmentId);
+
+            if (apartment == null)
+            {
+                return NotFound();
+            }
+
+            identity.AddClaim(new Claim("appartment", apartment.ApartmentId.ToString()));
+
+            string authType = CookieAuthenticationDefaults.AuthenticationScheme;
+            ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(authType, principal);
+            return RedirectToAction("Services", "Services");
         }
 
         [HttpPost]
@@ -104,8 +137,15 @@ namespace TSZH_Komarov.Controllers
             {
                 return View("Profile", model);
             }
+
             string salt = userService.GetSalt();
             string hashedPass = userService.GetSha256(model.NewPassword, salt);
+
+            if (model.OldPassword != model.OldPasswordFixed && userService.GetSha256(model.OldPassword, model.Salt) != model.OldPasswordFixed)
+            {
+                TempData["Message"] = "Произошла ошибка! Некорректный старый пароль!";
+                return View("Profile", model);
+            }
             if (await profileService.changeSecurity(hashedPass, salt))
             {
                 TempData["Message"] = "Данные успешно изменены!";
@@ -115,30 +155,6 @@ namespace TSZH_Komarov.Controllers
             return View("Profile", model);
         }
 
-        /*[HttpPost]
-        public async Task<IActionResult> UpdateNotifications(ProfileViewModel model)
-        {
-            TempData["ActiveTab"] = "notifications";
-
-            ModelState.Remove("FullName");
-            ModelState.Remove("Email");
-            ModelState.Remove("PhoneNumber");
-            ModelState.Remove("OldPassword");
-            ModelState.Remove("NewPassword");
-
-            if (!ModelState.IsValid)
-            {
-                return View("Profile", model);
-            }
-
-            if (await profileService.changeNotification(model.NotificationMethod))
-            {
-                TempData["Message"] = "Данные успешно изменены!";
-                return View("Profile", model);
-            }
-            TempData["Message"] = "Произошла ошибка! Попробуйте еще раз!";
-            return View("Profile", model);
-        }*/
 
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel login)
@@ -181,6 +197,7 @@ namespace TSZH_Komarov.Controllers
             };
 
             var tszhList = userService.GetUserTszhList(user.UserId);
+            var appartList = userService.GetUserApartmentList(user.UserId, tszhList[0].TszhId);
 
             List<Claim> claims = new List<Claim>
             {
@@ -189,6 +206,7 @@ namespace TSZH_Komarov.Controllers
                 new Claim("role", role),
                 new Claim("tszh", tszhList[0].TszhId.ToString()),
                 new Claim("tszhName", tszhList[0].Name.ToString()),
+                new Claim("appartment", appartList[0].ApartmentId.ToString()),
             };
 
             string authType = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -228,6 +246,54 @@ namespace TSZH_Komarov.Controllers
                 apartmentId = a.ApartmentId,
                 number = a.Number
             }));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateNotifications(ProfileViewModel model)
+        {
+            TempData["ActiveTab"] = "notifications";
+
+            string msg = await profileService.UpdateReminderDaysBefore(model.ReminderDaysBefore);
+
+            TempData["Message"] = msg;
+            return View("Profile", model);
+        }
+
+        [HttpGet("Profile/generate-telegram-link")]
+        public IActionResult GenerateTelegramLink()
+        {
+            try
+            {
+                var userId = userService.GetCurrUser().UserId;
+                var botLink = telegramService.GenerateBotLink(userId);
+                return Json(new { link = botLink });
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Ошибка при генерации Telegram ссылки");
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("Profile/check-telegram-binding")]
+        public async Task<IActionResult> CheckTelegramBinding()
+        {
+            TempData["ActiveTab"] = "notifications";
+            try
+            {
+                var user = userService.GetCurrUser();
+                
+                return Json(new
+                {
+                    isBound = !string.IsNullOrEmpty(user?.ChatId),
+                    chatId = user?.ChatId
+                });
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Ошибка проверки привязки Telegram");
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
     }

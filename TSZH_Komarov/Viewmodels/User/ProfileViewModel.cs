@@ -22,12 +22,22 @@ namespace TSZH_Komarov.Viewmodels.User
         [DataType(DataType.Password)]
         public string OldPassword { get; set; }
 
+        public string OldPasswordFixed { get; set; }
+
+        public string Salt { get; set; }
+
         [DataType(DataType.Password)]
         [MinLength(8, ErrorMessage = "Пароль должен начинаться от 8 символов")]
         [Required(ErrorMessage = "Введите новый пароль")]
         public string NewPassword { get; set; }
 
-        public int NotificationMethod { get; set; }
+        [Required]
+        [Display(Name = "Период напоминания")]
+        public int ReminderDaysBefore { get; set; }
+
+        public DateTime? LastReminderSent { get; set; }
+
+        public string? ChatId { get; set; }
 
         public int IsFirtsLogin { get; set; }
     }

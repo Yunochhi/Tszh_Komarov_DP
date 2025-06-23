@@ -7,12 +7,13 @@ namespace TSZH_Komarov.Services
 {
     public class ProfileService
     {
-        private Data.TszhKomarovContext context;
+        private TszhKomarovContext context;
         private AppUser user;
         private UserService userService;
-        public ProfileService(Data.TszhKomarovContext context, IHttpContextAccessor httpContextAccessor, UserService userService)
+        public ProfileService(TszhKomarovContext context, IHttpContextAccessor httpContextAccessor, UserService userService)
         {
             this.context = context;
+            this.userService = userService;
 
             var claimsUser = httpContextAccessor.HttpContext.User;
             int id = Convert.ToInt32(claimsUser.FindFirst("id")?.Value);
@@ -29,7 +30,12 @@ namespace TSZH_Komarov.Services
                 PhoneNumber = user.PhoneNumber,
                 PersonalAccount = user.Apartments.First().PersonalAccount,
                 OldPassword = user.Password,
-                IsFirtsLogin = user.IsFirstLogin
+                IsFirtsLogin = user.IsFirstLogin,
+                ReminderDaysBefore = user.ReminderDaysBefore,
+                LastReminderSent = user.LastReminderSent,
+                ChatId = user.ChatId,
+                OldPasswordFixed = user.Password,
+                Salt = user.Salt,
             };
             return model;
         }
@@ -67,7 +73,23 @@ namespace TSZH_Komarov.Services
                 return false;
             }
         }
-      
-    
+        public async Task<string> UpdateReminderDaysBefore(int ReminderDaysBefore)
+        {
+            var user = userService.GetCurrUser();
+
+            user.ReminderDaysBefore = ReminderDaysBefore;
+
+            try
+            {
+                await context.SaveChangesAsync();
+                return "Настройки напоминаний успешно обновлены";
+            }
+            catch
+            {
+                return "При изменении произошла ошибка! Попробуйте еще раз!";
+            }
+           
+        }
+
     }
 }

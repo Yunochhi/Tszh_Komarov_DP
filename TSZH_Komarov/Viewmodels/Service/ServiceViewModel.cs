@@ -1,6 +1,6 @@
 ﻿using TSZH_Komarov.Models;
 
-namespace TSZH_Komarov.Viewmodels
+namespace TSZH_Komarov.Viewmodels.Service
 {
     public class ServiceViewModel
     {
