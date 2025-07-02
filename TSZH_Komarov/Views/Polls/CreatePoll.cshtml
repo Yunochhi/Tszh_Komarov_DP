@@ -1,0 +1,260 @@
+﻿@using TSZH_Komarov.Viewmodels
+@model PollCreateViewModel
+
+@{
+    ViewData["Title"] = "Добавление голосования";
+}
+
+<link rel="stylesheet" href="~/css/notify.css" asp-append-version="true" />
+
+<div class="poll-container">
+    <div class="poll-header">
+        <div class="poll-title-container">
+            <h1 class="poll-page-title">Добавить голосование</h1>
+        </div>
+    </div>
+
+    <form asp-action="CreatePoll" method="post">
+        <div asp-validation-summary="ModelOnly" class="poll-text-danger"></div>
+    
+        <div class="poll-form-group">
+            <label asp-for="Title" class="poll-form-label"></label>
+            <input asp-for="Title" class="poll-form-control" />
+            <span asp-validation-for="Title" class="poll-text-danger"></span>
+        </div>
+
+        <div class="poll-form-group">
+            <label asp-for="VoteTypeId" class="poll-form-label"></label>
+            <select asp-for="VoteTypeId" asp-items="Model.VoteTypes" class="poll-form-control">
+                <option value="">Выберите уровень голосования</option>
+            </select>
+            <span asp-validation-for="VoteTypeId" class="poll-text-danger"></span>
+        </div>
+
+        <div class="poll-form-group">
+            <label asp-for="EndDate" class="poll-form-label"></label>
+            <input asp-for="EndDate" type="datetime-local" class="poll-form-control" />
+            <span asp-validation-for="EndDate" class="poll-text-danger"></span>
+        </div>
+
+        <div class="poll-form-group">
+            <label class="poll-form-label">Варианты ответов</label>
+            <div id="poll-options-container">
+                @for (int i = 0; i < Model.Options.Count; i++)
+                {
+                    <div class="poll-option-group">
+                        <div class="poll-input-group">
+                            <input asp-for="Options[i]" class="poll-form-control"
+                                   placeholder="Введите вариант ответа" />
+                            @if (i >= 3)
+                            {
+                                <button type="button" class="poll-btn poll-btn-danger remove-option">
+                                    ×
+                                </button>
+                            }
+                        </div>
+                        <span asp-validation-for="Options[i]" class="poll-text-danger"></span>
+                    </div>
+                }
+            </div>
+            <button type="button" id="add-option" class="poll-btn poll-btn-secondary">
+                + Добавить вариант
+            </button>
+            <span asp-validation-for="Options" class="poll-text-danger"></span>
+        </div>
+
+        <div class="poll-form-actions">
+            <button type="submit" class="poll-btn poll-btn-primary">Создать голосование</button>
+            <a asp-action="Voting" class="poll-btn poll-btn-cancel">Отмена</a>
+        </div>
+    </form>
+</div>
+      
+<div class="container">
+    @if (TempData["Message"] != null)
+    {
+        <div class="auto-hide">@TempData["Message"]</div>
+    }
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+         document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('poll-options-container');
+            const addBtn = document.getElementById('add-option');
+
+            // Добавление нового варианта
+            addBtn.addEventListener('click', function() {
+                const index = container.children.length;
+                const optionHtml = `
+                    <div class="poll-option-group">
+                        <div class="poll-input-group">
+                            <input name="Options[${index}]" class="poll-form-control"
+                                   placeholder="Введите вариант ответа" />
+                            <button type="button" class="poll-btn poll-btn-danger remove-option">
+                                ×
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', optionHtml);
+            });
+
+            // Удаление варианта
+            container.addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-option')) {
+                    e.target.closest('.poll-option-group').remove();
+                }
+            });
+
+            // Переиндексация оставшихся вариантов
+            function reindexOptions() {
+                const optionGroups = optionsContainer.querySelectorAll('.poll-option-group');
+                optionGroups.forEach((group, index) => {
+                    const input = group.querySelector('input');
+                    input.name = `Options[${index}]`;
+                });
+                optionCount = optionGroups.length;
+            }
+        });
+    </script>
+}
+<style>
+    :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #34495e;
+        --accent-color: #3498db;
+        --background-color: #f8f9fa;
+        --border-color: #dee2e6;
+        --text-muted: #6c757d;
+    }
+    .poll-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .poll-header {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        color: var(--primary-color);
+    }
+
+    .poll-form-group {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .poll-form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--primary-color);
+    }
+
+    .poll-form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 1rem;
+        transition: border-color 0.3s;
+    }
+
+        .poll-form-control:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+    .poll-text-danger {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    /* Группа ввода для вариантов ответов */
+    .poll-input-group {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 10px;
+        align-items: center;
+    }
+
+        .poll-input-group .poll-form-control {
+            flex: 1;
+        }
+
+    /* Кнопки */
+    .poll-btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-align: center;
+        display: inline-block;
+        text-decoration: none;
+    }
+
+    .poll-btn-primary {
+        background-color: #3498db;
+        color: white;
+    }
+
+        .poll-btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+    .poll-btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+        .poll-btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+    .poll-btn-danger {
+        background: none;
+        color: #dc3545;
+        font-size: 1.5rem;
+        padding: 0 0.5rem;
+        line-height: 1;
+    }
+
+        .poll-btn-danger:hover {
+            color: #bd2130;
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+    .poll-btn-cancel {
+        background-color: #f8f9fa;
+        color: #6c757d;
+        border: 1px solid #dee2e6;
+        margin-left: 0.5rem;
+    }
+
+        .poll-btn-cancel:hover {
+            background-color: #e2e6ea;
+        }
+
+    .poll-form-actions {
+        display: flex;
+        justify-content: flex-start;
+        margin-top: 1.5rem;
+    }
+</style>

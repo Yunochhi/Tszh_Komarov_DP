@@ -1,4 +1,5 @@
-﻿@using TSZH_Komarov.Viewmodels
+﻿@using TSZH_Komarov.Services
+@using TSZH_Komarov.Viewmodels
 
 @{
     ViewData["Title"] = "Голосование";
@@ -9,75 +10,147 @@
 
 @{
     int userId = Convert.ToInt32(User.FindFirst("id")?.Value);
+    var user = User;
+    bool isAdmin = user.FindFirst("role")?.Value == "admin";
+    int tszhId = Convert.ToInt32(user.FindFirst("tszh")?.Value);
+
+    var votingService = ViewBag.VotingService as VotingService;
 }
 
 <div class="poll-container">
     <div class="poll-header">
-        <h1 class="poll-title">Активные голосования</h1>
-        <div class="filter-buttons">
-            <a asp-action="Voting"
-               asp-route-voteType=""
-               class="filter-button @(string.IsNullOrEmpty(ViewBag.ActiveFilter) ? "active-filter" : "")">
-                Все
-            </a>
-            <a asp-action="Voting"
-               asp-route-voteType="Дом"
-               class="filter-button @(ViewBag.ActiveFilter == "Дом" ? "active-filter" : "")">
-                Дом
-            </a>
-            <a asp-action="Voting"
-               asp-route-voteType="Подъезд"
-               class="filter-button @(ViewBag.ActiveFilter == "Подъезд" ? "active-filter" : "")">
-                Подъезд
-            </a>
-            <a asp-action="Voting"
-               asp-route-voteType="ТСЖ"
-               class="filter-button @(ViewBag.ActiveFilter == "ТСЖ" ? "active-filter" : "")">
-                ТСЖ
-            </a>
-            <a asp-action="Voting"
-               asp-route-voteType="Завершенные"
-               class="filter-button @(ViewBag.ActiveFilter == "Завершенные" ? "active-filter" : "")">
-                Завершенные
-            </a>
+        <div class="poll-header-top">
+            <h2 class="poll-header-title">Активные голосования</h2>
+
+            <div class="filter-buttons">
+                <a asp-action="Voting"
+                   asp-route-voteType=""
+                   class="filter-button @(string.IsNullOrEmpty(ViewBag.ActiveFilter) ? "active-filter" : "")">
+                    Все
+                </a>
+                <a asp-action="Voting"
+                   asp-route-voteType="Дом"
+                   class="filter-button @(ViewBag.ActiveFilter == "Дом" ? "active-filter" : "")">
+                    Дом
+                </a>
+                <a asp-action="Voting"
+                   asp-route-voteType="Подъезд"
+                   class="filter-button @(ViewBag.ActiveFilter == "Подъезд" ? "active-filter" : "")">
+                    Подъезд
+                </a>
+                <a asp-action="Voting"
+                   asp-route-voteType="ТСЖ"
+                   class="filter-button @(ViewBag.ActiveFilter == "ТСЖ" ? "active-filter" : "")">
+                    ТСЖ
+                </a>
+                <a asp-action="Voting"
+                   asp-route-voteType="Завершенные"
+                   class="filter-button @(ViewBag.ActiveFilter == "Завершенные" ? "active-filter" : "")">
+                    Завершенные
+                </a>
+            </div>
+        </div>
+
+        <div class="poll-header-bottom">
+            @if (isAdmin)
+            {
+                <a asp-controller="Polls" asp-action="CreatePoll" class="poll-create-link">
+                    Добавить голосование
+                </a>
+            }
         </div>
     </div>
+
     @foreach (var poll in Model)
     {
-        var userVotedInPoll = poll.PollOptions
-        .Any(o => o.Votes.Any(v => v.UserId == userId));
+        var userVotedInPoll = poll.PollOptions.Any(o => o.Votes.Any(v => v.UserId == userId));
         var isEnded = poll.EndDate < DateTime.Now;
-        <div class="poll-card">
-            <div class="poll-header">
+
+        PollOption winner = null;
+        double totalPollSquare = 0;
+
+        if (isEnded && votingService != null)
+        {
+            var result = votingService.GetPollWinner(poll);
+            winner = result.Winner;
+            totalPollSquare = result.TotalSquare;
+        }
+
+        <div class="poll-card @(isEnded ? "completed-poll" : "")">
+            <div class="poll-title">
                 <h2>@poll.Title</h2>
             </div>
 
-            <form method="post">
-                <input type="hidden" name="pollId" value="@poll.PollId" />
-                <div class="poll-options">
+            @if (!isEnded)
+            {
+                <form method="post">
+                    <input type="hidden" name="pollId" value="@poll.PollId" />
+
+                    <input type="hidden" name="filter" value="@ViewBag.ActiveFilter" />
+
+                    <div class="poll-options">
+                        @foreach (var option in poll.PollOptions)
+                        {
+                            var userVoted = option.Votes.Any(v => v.UserId == userId);
+                            <div class="poll-option">
+                                <button type="submit"
+                                        name="pollOptionId"
+                                        value="@option.PollOptionId"
+                                        class="vote-button @(userVoted ? "voted" : "")"
+                                        @(userVotedInPoll ? "disabled" : "")>
+                                    @option.OptionText
+                                </button>
+                                <span class="vote-count">👤 @option.Votes.Count</span>
+                            </div>
+                        }
+                    </div>
+                </form>
+            }
+            else
+            {
+                <div class="poll-results">
                     @foreach (var option in poll.PollOptions)
                     {
-                        var totalVotes = poll.PollOptions.Sum(o => o.Votes.Count);
-                        var percentage = totalVotes > 0
-                        ? Math.Round((double)option.Votes.Count / totalVotes * 100, 2) : 0;
-                        var userVoted = option.Votes.Any(v => v.UserId == userId);
-                        <div class="poll-option">
-                            <button type="submit"
-                                    name="pollOptionId"
-                                    value="@option.PollOptionId"
-                                    class="vote-button @(userVoted ? "voted" : "")"
-                            @(userVotedInPoll || isEnded ? "disabled" : "")>
+                        double optionSquare = option.Votes.Sum(v => v.Square);
+                        double percentage = totalPollSquare > 0
+                        ? (double)optionSquare / (double)totalPollSquare * 100
+                        : 0;
 
-                                @option.OptionText
-                            </button>
-                            <span class="vote-count">@option.Votes.Count</span>
+                        var isWinner = winner != null && option.PollOptionId == winner.PollOptionId;
+                        var userVote = option.Votes.FirstOrDefault(v => v.UserId == userId);
+                        bool isUserVotedForOption = userVote != null;
+
+                        <div class="result-option @(isWinner ? "winner-option" : "")">
+                            <div class="option-header">
+                                <div class="option-text">@option.OptionText</div>
+                            </div>
+
+                            <div class="result-details">
+                                <span class="square">📏 @optionSquare.ToString("0.00") м²</span>
+                                <span class="percentage">📊 @percentage.ToString("0.00")%</span>
+                                <span class="vote-count">👤 @option.Votes.Count</span>
+                            </div>
+
+                            @if (isUserVotedForOption)
+                            {
+                                <div class="user-vote-detail">
+                                    Ваш голос: @userVote.Square.ToString("0.00") м²
+                                </div>
+                            }
                         </div>
                     }
                 </div>
-            </form>
+            }
 
             <div class="poll-status">
-                До @poll.EndDate.ToString("dd.MM.yyyy HH:mm")
+                @if (isEnded)
+                {
+                    <span>Завершено: @poll.EndDate.ToString("dd.MM.yyyy HH:mm")</span>
+                }
+                else
+                {
+                    <span>До @poll.EndDate.ToString("dd.MM.yyyy HH:mm")</span>
+                }
             </div>
         </div>
     }

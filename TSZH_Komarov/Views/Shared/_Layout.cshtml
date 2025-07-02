@@ -18,6 +18,7 @@
 }
 <body>
     <header>
+        @await RenderSectionAsync("scripts", required: false)
         @await RenderSectionAsync("Styles", required: false)
         @if (User.Identity.IsAuthenticated)
         {
