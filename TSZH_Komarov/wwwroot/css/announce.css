@@ -32,7 +32,6 @@
 .tszh-header {
     display: flex;
     flex-direction: column;
-    gap: 1rem; 
     margin-bottom: 2rem;
     padding: 1rem;
     background: white;
@@ -44,8 +43,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap; 
-    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .tszh-title {
@@ -221,5 +219,12 @@ textarea.form-control {
     font-size: 16px;
     color: #FCA311;
     font-weight: 500;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    display: inline-block;
     margin-top: 10px;
 }
+    .history-link:hover {
+        color: #e69500;
+        text-decoration: underline;
+    }
