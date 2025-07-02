@@ -11,6 +11,8 @@ public partial class Vote
 
     public int UserId { get; set; }
 
+    public double Square { get; set; }
+
     public virtual PollOption PollOption { get; set; } = null!;
 
     public virtual AppUser User { get; set; } = null!;

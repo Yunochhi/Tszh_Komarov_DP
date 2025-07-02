@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace TSZH_Komarov.Models;
+﻿namespace TSZH_Komarov.Models;
 
 public partial class PollOption
 {
